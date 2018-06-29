@@ -346,4 +346,18 @@ def merge_line_digraph(A,coords,LA,Lcoords):
 		A_merged[N+e,col_idx[e]] = 1 # from source-vertex to edge
 		A_merged[row_idx[e],N+e] = 1 # from edge to end-vertex
 	return [A_merged,coords_merged]
+
+def gft(M,x,showprogress=False):
+	'''
+	GFT of a signal as decomposition into the eigenbasis of matrix M.
+	>> M: adjacency or Laplacian matrix.
+	'''
+	if showprogress:
+		print 'Starting the computation of the Fourier basis.'
+	[eigvals,V] = np.linalg.eig(M)
+	if showprogress:
+		print 'Computing the Fourier matrix.'
+	Minv = np.linalg.inv(M)
+	xhat = np.dot(Minv,x) # possibly a complex array!
+	return xhat
 	
