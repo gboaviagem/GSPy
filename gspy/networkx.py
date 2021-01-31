@@ -1,6 +1,7 @@
 """Networkx-related functions."""
 
 import networkx as nx
+import numpy as np
 
 
 def describe(graph, return_dict=False):
@@ -8,10 +9,14 @@ def describe(graph, return_dict=False):
 
     Parameters
     ----------
-    graph : nx.Graph()
+    graph : nx.Graph() or np.ndarray
+        If Numpy array, it is assumed to be the adjacency matrix.
     return_dict : bool, optional, default: False
         Whether to return a dictionary with info.
     """
+    if isinstance(graph, np.ndarray):
+        graph = nx.from_numpy_matrix(graph)
+
     if isinstance(graph, nx.DiGraph):  # MultiDiGraph is also considered here
         is_dir = True
     else:
