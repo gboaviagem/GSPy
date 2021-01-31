@@ -39,7 +39,9 @@ def describe(graph, return_dict=False):
         d["n_connected_components"] = nx.number_connected_components(graph)
     d["is_directed"] = nx.is_directed(graph)
     d["is_weighted"] = nx.is_weighted(graph)
-    for key, value in d.items():
-        print(key + ":", value)
+
     if return_dict:
         return d
+    else:
+        for key, value in d.items():
+            print(key + ":", value)
