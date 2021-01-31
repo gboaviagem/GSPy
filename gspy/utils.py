@@ -8,6 +8,49 @@ from sklearn.neighbors import NearestNeighbors
 import networkx as nx
 
 
+def check_symmetric(a, tol=1e-8):
+    """Check if array is symmetric.
+
+    Reference: https://stackoverflow.com/questions/42908334/
+    checking-if-a-matrix-is-symmetric-in-numpy
+    """
+    return np.all(np.abs(a-a.T) < tol)
+
+def prepare_coords_for_plotly(A, coords, verbose=True):
+	"""Prepare the coordinates for the Plotly line plot.
+
+	A : np.ndarray, shape=(N,N)
+		Graph weighted adjacency matrix.
+	coords : np.ndarray, shape=(N,2)
+		Nodes coordinates.
+	verbose : bool, default=True
+	"""
+
+	if check_symmetric(A, tol=1e-8):
+		from_nodes, to_nodes = np.where(np.triu(A) != 0)
+	else:
+		# To be used when directed graphs are accepted
+		# TODO Modify the code to draw arrows, not lines.
+		from_nodes, to_nodes = np.where(A != 0)
+		raise NotImplementedError(
+			"Function not yet suited for directed graphs.")
+
+	x_array = list()
+	y_array = list()
+
+	desc = "Preparing to build the edges"
+
+	for e in (tqdm(range(len(from_nodes)), desc=desc)
+			  if verbose else range(len(from_nodes))):
+		# Nodes coordinates
+		x_from = coords[from_nodes[e], 0]
+		x_to = coords[to_nodes[e], 0]
+		y_from = coords[from_nodes[e], 1]
+		y_to = coords[to_nodes[e], 1]
+		x_array.extend([x_from, x_to, None])
+		y_array.extend([y_from, y_to, None])
+	return x_array, y_array
+
 def normalize_mtx_l1(A, axis=0):
 	# Returns a version of the matrix with each column (axis=0) or row (axis=1)normalized to 1
 	# with respect to the l1-norm (sum == 1).

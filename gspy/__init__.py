@@ -2,7 +2,8 @@
 
 from gspy.description import describe
 from gspy.create import *
-from gspy.show import *
+from gspy.show.matplotlib import *
+from gspy.show.plotly import *
 
 __all__ = [
     # gspy.describe
@@ -13,4 +14,5 @@ __all__ = [
     'adj_matrix_directed_ring', 'coords_ring_graph',
     'coords_line_graph', 'line_graph', 'random_sensor_graph',
     # gspy.show
-    'plot_graph', 'stem', 'plot_graph_signal']
+    'plt_graph', 'stem', 'plt_graph_signal',
+    'show_graph']

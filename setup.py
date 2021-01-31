@@ -17,9 +17,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="gspy",
-    version="0.0.2",
+    version="0.0.3",
     author="Guilherme Boaviagem",
     author_email="guilherme.boaviagem@gmail.com",
     description="Utilities for Graph Signal Processing",
     install_requires=install_requires,
-    packages=['gspy'])
+    packages=['gspy', 'gspy.show'])

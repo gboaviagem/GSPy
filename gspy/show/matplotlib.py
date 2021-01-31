@@ -1,4 +1,4 @@
-"""Utilities for graph visualization."""
+"""Utilities for graph visualization based on matplotlib."""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,7 +19,9 @@ def stem(x,y,fsize=18,msize=10,color='b',linestyle='--',labelstr=0,alph=1):
 	plt.tick_params(axis='both', which='major', labelsize=fsize-2)
 	return True
 
-def plot_graph(A,coords,display_edges=1,display_axis=0,color='b',graph_node_size=80, width=12, height=8):
+def plt_graph(
+		A, coords, display_edges=1, display_axis=0, color='b',
+		graph_node_size=80, width=12, height=8):
 	[rows,cols] = np.where(A!=0)
 	plt.figure(figsize=(width, height))
 	if display_edges==1:
@@ -41,15 +43,24 @@ def plot_graph(A,coords,display_edges=1,display_axis=0,color='b',graph_node_size
 			for j in tqdm(range(len(cols))):
 				x1, y1 = coords[cols[j],0], coords[cols[j],1]
 				x2, y2 = coords[rows[j],0], coords[rows[j],1]
-				plt.arrow(x1, y1, x2-x1, y2-y1, head_width=h_length/2.0, head_length=h_length, fc='0.5', ec='0.5',length_includes_head=True,overhang=0.3,zorder=1)
-	plt.scatter(coords[:,0],coords[:,1],s=graph_node_size,c=color,edgecolor='face',zorder=2)
-	if display_axis==0:
+				plt.arrow(
+					x1, y1, x2-x1, y2-y1, head_width=h_length/2.0,
+					head_length=h_length, fc='0.5', ec='0.5',
+					length_includes_head=True, overhang=0.3, zorder=1)
+	plt.scatter(
+		coords[:,0], coords[:,1], s=graph_node_size, c=color,
+		edgecolor='face', zorder=2)
+	if display_axis == 0:
 		plt.axis('off')
 	plt.axis('tight')
 	return True
 
-def plot_graph_signal(A,coords,signal,display_edges=1,display_axis=0,cmin=0,cmax=0,graph_node_size=150,cfontsize=22,create_figure=True,edge_color_face=True,show_progress=False,arrow_scale=1.0):
-	print('plot_graph_signal has initiated.')
+def plt_graph_signal(
+		A, coords, signal, display_edges=1, display_axis=0, cmin=0, cmax=0,
+		graph_node_size=150, cfontsize=22, create_figure=True, verbose=True,
+		edge_color_face=True, show_progress=False, arrow_scale=1.0):
+	if verbose:
+		print('plot_graph_signal has initiated.')
 	if cmin==cmax:
 		# case in which the user did not specify the colormap range.
 		cmin = np.min(signal)
@@ -93,5 +104,6 @@ def plot_graph_signal(A,coords,signal,display_edges=1,display_axis=0,cmin=0,cmax
 	if display_axis==0:
 		plt.axis('off')
 	plt.axis('tight')
-	print('plot_graph_signal completed.')
+	if verbose:
+		print('plot_graph_signal completed.')
 	return True
