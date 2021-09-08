@@ -32,7 +32,23 @@ def nearest_neighbors(X, n_neighbors=20, algorithm='ball_tree',
 
     return W
 
-def adj_matrix_from_coords(coords,theta):
+def adj_matrix_from_coords(coords, theta):
+	"""Create a gaussian-weighted adjacency matrix using euclidean distance.
+
+	Parameters
+	----------
+	coords : array
+		(N, 2) array of coordinates.
+	theta : float
+		Variance of the weight distribution.
+
+	References
+	----------
+	SHUMAN, D. I. et al. The emerging field of signal processing on graphs:
+	Extending high-dimensional data analysis to networks and other irregular
+	domains. IEEE Signal Process. Mag., IEEE, v. 30, n. 3, p. 83–98, 2013
+
+	"""
 	[N,M] = coords.shape
 	A = np.zeros((N,N))
 	for	i in tqdm(np.arange(1,N)):
@@ -47,7 +63,23 @@ def adj_matrix_from_coords(coords,theta):
 	print('adj_matrix_from_coords process is completed.')
 	return A + A.transpose()
 
-def adj_matrix_from_coords_limited(coords,limit):
+def adj_matrix_from_coords_limited(coords, limit):
+	"""Create a nearest-neighbors graph with gaussian weights.
+
+	Parameters
+	----------
+	coords : array
+		(N, 2) array of coordinates.
+	limit : int
+		Minimum number of neighbors.
+
+	References
+	----------
+	SHUMAN, D. I. et al. The emerging field of signal processing on graphs:
+	Extending high-dimensional data analysis to networks and other irregular
+	domains. IEEE Signal Process. Mag., IEEE, v. 30, n. 3, p. 83–98, 2013
+
+	"""
 	[N,M] = coords.shape
 	A = np.zeros((N,N))
 	for	i in tqdm(np.arange(1,N)):
@@ -63,7 +95,19 @@ def adj_matrix_from_coords_limited(coords,limit):
 				A[i,j] = np.exp(-(distance**2))
 	return A + A.transpose()
 
-def adj_matrix_from_coords2(coords,min_threshold):
+def adj_matrix_from_coords2(coords, min_threshold):
+	"""Create gaussian-weighted graphs, but with a weight threshold.
+
+	Variation on the adj_matrix_from_coords function.
+
+	Parameters
+	----------
+	coords : array
+		(N, 2) array of coordinates.
+	theta : float
+		Variance of the weight distribution.
+
+	"""
 	[N,M] = coords.shape
 	A = np.zeros((N,N))
 	for	i in tqdm(np.arange(1,N)):
@@ -79,10 +123,106 @@ def adj_matrix_from_coords2(coords,min_threshold):
 	print('adj_matrix_from_coords2 process is completed.')
 	return A + A.transpose()
 
-def adj_matrix_directed_ring(N,c=0):
-	# Returns the adjacency matrix of a ring graph.
-	# N: number of graph nodes.
-	# c: first column of the adjacency matrix. It carries the edge weights.
+def adj_matrix_path(N, weights=None, directed=False):
+	"""Returns the adjacency matrix of a path graph.
+
+	Parameters
+	----------
+	N: int
+		Number of graph nodes.
+	weights: array, default=None
+		Array with edge weights. If None, unit weights are used.
+		If not None, then the given value of N is replaced by weights+1.
+	directed: bool, default=False
+		If True, a directed graph is created.
+
+	"""
+	if weights is None:
+		A = np.tri(N, k=1) - np.tri(N, k=-2) - np.eye(N)
+	else:
+		N = len(weights) + 1
+		A = np.zeros((N, N))
+		A[:-1, 1:] = np.diag(weights)
+		A = A + A.transpose()
+	if directed:
+		A = np.tril(A)
+	return A
+
+def coords_path(N):
+	"""Coordinates of the vertices in the path graph.
+	Parameters
+	----------
+	N : int
+		Number of graph vertices.
+	"""
+	coords = np.array([[i, 0] for i in range(N)])
+	return coords
+
+def make_path(N, weights=None, directed=False):
+	"""Create adjacency matrix and coordinates of a path graph.
+
+	Parameters
+	----------
+	N: int
+		Number of graph nodes.
+	weights: array, default=None
+		Array with edge weights. If None, unit weights are used.
+		If not None, then the given value of N is replaced by weights+1.
+	directed: bool, default=False
+		If True, a directed graph is created.
+
+	"""
+	if weights is not None:
+		assert N == len(weights) + 1, (
+			"Length of weights array is {}, not compatible with "
+			"{} vertices.".format(len(weights), N))
+	A = adj_matrix_path(N, weights=weights, directed=directed)
+	coords = coords_path(N)
+	return A, coords
+
+def make_grid(rows, columns, weights_r=None, weights_c=None):
+	"""Create a grid graph.
+
+	Parameters
+	----------
+	rows: int
+		Number of rows in the grid.
+	columns: int
+		Number of columns in the grid.
+	weights_r: array, default=None
+		Weights in the rows.
+	weights_c: array, default=None
+		Weights in the columns.
+
+	"""
+	A1, coords1 = make_path(columns, weights=weights_c)
+	A2, coords2 = make_path(rows, weights=weights_r)
+
+	N1 = len(A1)
+	N2 = len(A2)
+
+	# Using the property that the grid graph is the cartesian product
+	# of two path graphs.
+	A = np.kron(A1, np.eye(N2)) + np.kron(np.eye(N1), A2)
+	coords = list()
+	for c1 in coords1[:, 0].ravel():
+		for c2 in coords2[:, 0].ravel():
+			coords.append([c1, c2])
+	coords = np.array(coords)
+
+	return A, coords
+
+def adj_matrix_directed_ring(N, c=0):
+	"""Returns the adjacency matrix of a ring graph.
+
+	Parameters
+	----------
+	N: int
+		Number of graph nodes.
+	c: array
+		First column of the adjacency matrix. It carries the edge weights.
+
+	"""
 	if c==0: # case in which the edge weights were not entered. Then, they are made equal to 1.
 		c = np.zeros(N)
 		c[1] = 1
@@ -90,6 +230,14 @@ def adj_matrix_directed_ring(N,c=0):
 	return A
 
 def coords_ring_graph(N):
+	"""Returns the vertices coordinates of a ring graph.
+
+	Parameters
+	----------
+	N: int
+		Number of graph nodes.
+
+	"""
 	coords = np.zeros((N,2))
 	n = np.arange(N)
 	coords[:,0] = np.cos(2.0*np.pi*n/N)
@@ -131,7 +279,6 @@ def line_graph(A,coords,a=0.5):
 	A = 1*(A!=0) # FORCES UNITARY WEIGHTS.
 	assert a > 0 and a < 1, \
 		"Fractional parameter is out of bounds! (should be >0 and <1)"
-		
 
 	if np.array_equal(A.transpose(),A):
 		# Undirected graph
